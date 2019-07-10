@@ -62,6 +62,8 @@ KEYS = {
 
 
 active = False
+buflist_buffers = None
+buflist_selection = None
 
 
 def input_text_changed_cb(data, signal, buffer):
@@ -81,15 +83,41 @@ def command_cb(data, buffer, args):
 
 
 def command_run_input_cb(data, buffer, command):
-    global active
+    global active, buflist_buffers, buflist_selection
     input = weechat.buffer_get_string(buffer, 'input')
 
     if active:
         if command == "/input return":
+            jump_buffer = buflist_buffers[buflist_selection]
             active = False
             set_localvars(input)
+            buflist_buffers = None
+            buflist_selection = None
             weechat.bar_item_update(SCRIPT_BAR_ITEM)
             weechat.bar_item_update("input_text")
+
+            jump_buffer_full_name = weechat.buffer_get_string(jump_buffer, "full_name")
+            weechat.command(buffer, "/buffer {}".format(jump_buffer_full_name))
+            return weechat.WEECHAT_RC_OK_EAT
+        elif command == "/input complete_next":
+            buffer_set_localvar(buflist_buffers[buflist_selection], SCRIPT_LOCALVAR, "1")
+            buflist_selection += 1
+            if buflist_selection >= len(buflist_buffers):
+                buflist_selection = 0
+            buffer_set_localvar(buflist_buffers[buflist_selection], SCRIPT_LOCALVAR, "2")
+            weechat.bar_item_update("buflist")
+            # set_localvars(input)
+            # weechat.bar_item_update(SCRIPT_BAR_ITEM)
+            return weechat.WEECHAT_RC_OK_EAT
+        elif command == "/input complete_previous":
+            buffer_set_localvar(buflist_buffers[buflist_selection], SCRIPT_LOCALVAR, "1")
+            buflist_selection -= 1
+            if buflist_selection < 0:
+                buflist_selection = len(buflist_buffers) - 1
+            buffer_set_localvar(buflist_buffers[buflist_selection], SCRIPT_LOCALVAR, "2")
+            weechat.bar_item_update("buflist")
+            # set_localvars(input)
+            # weechat.bar_item_update(SCRIPT_BAR_ITEM)
             return weechat.WEECHAT_RC_OK_EAT
 
         set_localvars(input)
@@ -140,6 +168,25 @@ def set_localvars(input):
     weechat.infolist_free(buffers)
 
     weechat.bar_item_update("buflist")
+
+    if active:
+        global buflist_buffers, buflist_selection
+        buflist_buffers = []
+        buflist_selection = 0
+
+        buflist = weechat.infolist_get("buflist", "", "")
+        while weechat.infolist_next(buflist):
+            pointer = weechat.infolist_pointer(buflist, "pointer")
+            # full_name = weechat.buffer_get_string(pointer, "full_name")
+            localvar = weechat.buffer_get_string(pointer, "localvar_{}".format(SCRIPT_LOCALVAR))
+            # weechat.prnt("", "{} {}".format(full_name, localvar))
+            if localvar == "1":
+                buflist_buffers.append(pointer)
+
+        weechat.infolist_free(buflist)
+
+        if buflist_buffers:
+            buffer_set_localvar(buflist_buffers[buflist_selection], SCRIPT_LOCALVAR, "2")
 
 
 def buffer_set_localvar(buffer, localvar, value):
