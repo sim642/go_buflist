@@ -235,7 +235,14 @@ if __name__ == "__main__" and IMPORT_OK:
 
         weechat.hook_command(SCRIPT_COMMAND, SCRIPT_DESC,
 """""",  # TODO
-"""""",  # TODO
+"""Prepend to weechat.bar.buflist.items:
+    go_buflist,
+
+Append to buflist.look.display_conditions:
+    && ${buffer.local_variables.go_buflist_hidden}==0
+
+Prepend to buflist.format.buffer:
+    ${eval:${plugins.var.python.go_buflist.format}}""",  # TODO
 """""".replace("\n", ""),  # TODO
         "command_cb", "")
 
