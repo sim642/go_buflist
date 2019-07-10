@@ -93,7 +93,9 @@ def command_run_input_cb(data, buffer, command):
     input = weechat.buffer_get_string(buffer, "input")
 
     if active:
-        if command == "/input return":
+        if command.startswith("/input search_text") or command.startswith("/input jump"):
+            return weechat.WEECHAT_RC_OK_EAT
+        elif command == "/input return":
             jump_buffer = buflist_buffers[buflist_selection] if buflist_buffers else None
 
             active = False
