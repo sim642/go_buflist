@@ -67,6 +67,8 @@ buflist_selection = None
 prev_input = None
 prev_input_pos = None
 
+timer = None
+
 
 def input_text_changed_cb(data, signal, buffer):
     if active:
@@ -182,24 +184,41 @@ def set_localvars(input):
 
     weechat.bar_item_update("buflist")
 
+    global timer
     if active:
-        global buflist_buffers, buflist_selection
-        buflist_buffers = []
-        buflist_selection = 0
+        # update_buflist_buffers(None, None)
+        if timer:
+            weechat.unhook(timer)
+        timer = weechat.hook_timer(1, 0, 1, "update_buflist_buffers", "")
 
-        buflist = weechat.infolist_get("buflist", "", "")
-        while weechat.infolist_next(buflist):
-            pointer = weechat.infolist_pointer(buflist, "pointer")
-            # full_name = weechat.buffer_get_string(pointer, "full_name")
-            localvar = weechat.buffer_get_string(pointer, "localvar_{}".format(SCRIPT_LOCALVAR))
-            # weechat.prnt("", "{} {}".format(full_name, localvar))
-            if localvar == "1":
-                buflist_buffers.append(pointer)
 
-        weechat.infolist_free(buflist)
+def update_buflist_buffers(data, remaining_calls):
+    global buflist_buffers, buflist_selection
+    buflist_buffers = []
+    buflist_selection = 0
 
-        if buflist_buffers:
-            buffer_set_localvar(buflist_buffers[buflist_selection], SCRIPT_LOCALVAR, "2")
+    buflist = weechat.infolist_get("buflist", "", "")
+    while weechat.infolist_next(buflist):
+        pointer = weechat.infolist_pointer(buflist, "pointer")
+        # full_name = weechat.buffer_get_string(pointer, "full_name")
+        localvar = weechat.buffer_get_string(pointer, "localvar_{}".format(SCRIPT_LOCALVAR))
+        # weechat.prnt("", "{} {}".format(full_name, localvar))
+        if localvar == "1" or localvar == "2":
+            buflist_buffers.append(pointer)
+
+    weechat.infolist_free(buflist)
+
+    # weechat.prnt("", str(buflist_buffers))
+
+    if buflist_buffers:
+        buffer_set_localvar(buflist_buffers[buflist_selection], SCRIPT_LOCALVAR, "2")
+
+    weechat.bar_item_update("buflist")
+
+    global timer
+    timer = None
+
+    return weechat.WEECHAT_RC_OK
 
 
 def buffer_set_localvar(buffer, localvar, value):
