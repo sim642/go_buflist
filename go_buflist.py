@@ -49,7 +49,12 @@ except ImportError:
     print("Get WeeChat now at: http://www.weechat.org/")
     IMPORT_OK = False
 
-SETTINGS = {}
+SETTINGS = {
+    "format": (
+        "${if:${buffer.local_variables.go_buflist}==1?${color:,cyan}}${if:${buffer.local_variables.go_buflist}==2?${color:,brown}}",
+        "TODO"  # TODO
+    )
+}
 
 KEYS = {
     "meta-g": "/%s" % SCRIPT_COMMAND
