@@ -150,7 +150,7 @@ def set_localvars(input):
     buffers = weechat.infolist_get("buffer", "", "*")
     while weechat.infolist_next(buffers):
         pointer = weechat.infolist_pointer(buffers, "pointer")
-        name = weechat.infolist_string(buffers, "name")
+        name = weechat.infolist_string(buffers, "short_name")
 
         localvar = None
         localvar_hidden = None
