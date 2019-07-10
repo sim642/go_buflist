@@ -199,7 +199,7 @@ def update_buflist_buffers(data, remaining_calls):
 
     buflist = weechat.infolist_get("buflist", "", "")
     while weechat.infolist_next(buflist):
-        pointer = weechat.infolist_pointer(buflist, "pointer")
+        pointer = weechat.infolist_pointer(buflist, "buffer")
         # full_name = weechat.buffer_get_string(pointer, "full_name")
         localvar = weechat.buffer_get_string(pointer, "localvar_{}".format(SCRIPT_LOCALVAR))
         # weechat.prnt("", "{} {}".format(full_name, localvar))
