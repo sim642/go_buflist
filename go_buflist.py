@@ -38,6 +38,7 @@ SCRIPT_REPO = "TODO"
 SCRIPT_COMMAND = SCRIPT_NAME
 SCRIPT_BAR_ITEM = SCRIPT_NAME
 SCRIPT_LOCALVAR = SCRIPT_NAME
+SCRIPT_LOCALVAR_HIDDEN = "{}_hidden".format(SCRIPT_LOCALVAR)
 
 IMPORT_OK = True
 
@@ -119,19 +120,28 @@ def set_localvars(input):
 		name = weechat.infolist_string(buffers, "name")
 
 		localvar = None
+		localvar_hidden = None
 		if active:
 			if input in name:
-				localvar = 1
+				localvar = "1"
+				localvar_hidden = "0"
 			else:
-				localvar = 0
-		else:
-			localvar = 1
+				localvar = "0"
+				localvar_hidden = "1"
 
-		weechat.buffer_set(pointer, "localvar_set_{}".format(SCRIPT_LOCALVAR), str(localvar))
+		buffer_set_localvar(pointer, SCRIPT_LOCALVAR, localvar)
+		buffer_set_localvar(pointer, SCRIPT_LOCALVAR_HIDDEN, localvar_hidden)
 
 	weechat.infolist_free(buffers)
 
 	weechat.bar_item_update("buflist")
+
+
+def buffer_set_localvar(buffer, localvar, value):
+	if value is not None:
+		weechat.buffer_set(buffer, "localvar_set_{}".format(localvar), value)
+	else:
+		weechat.buffer_set(buffer, "localvar_del_{}".format(localvar), "")
 
 
 if __name__ == "__main__" and IMPORT_OK:
