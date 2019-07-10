@@ -94,7 +94,8 @@ def command_run_input_cb(data, buffer, command):
 
     if active:
         if command == "/input return":
-            jump_buffer = buflist_buffers[buflist_selection]
+            jump_buffer = buflist_buffers[buflist_selection] if buflist_buffers else None
+
             active = False
             set_localvars(input)
             buflist_buffers = None
@@ -105,8 +106,9 @@ def command_run_input_cb(data, buffer, command):
             weechat.buffer_set(buffer, "input_pos", str(prev_input_pos))
             weechat.bar_item_update("input_text")
 
-            jump_buffer_full_name = weechat.buffer_get_string(jump_buffer, "full_name")
-            weechat.command(buffer, "/buffer {}".format(jump_buffer_full_name))
+            if jump_buffer:
+                jump_buffer_full_name = weechat.buffer_get_string(jump_buffer, "full_name")
+                weechat.command(buffer, "/buffer {}".format(jump_buffer_full_name))
             return weechat.WEECHAT_RC_OK_EAT
         elif command == "/input complete_next":
             buffer_set_localvar(buflist_buffers[buflist_selection], SCRIPT_LOCALVAR, "1")
