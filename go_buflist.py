@@ -64,18 +64,24 @@ KEYS = {
 active = False
 buflist_buffers = None
 buflist_selection = None
+prev_input = None
+prev_input_pos = None
 
 
 def input_text_changed_cb(data, signal, buffer):
     if active:
-        input = weechat.buffer_get_string(buffer, 'input')
+        input = weechat.buffer_get_string(buffer, "input")
         set_localvars(input)
         weechat.bar_item_update(SCRIPT_BAR_ITEM)
     return weechat.WEECHAT_RC_OK
 
 
 def command_cb(data, buffer, args):
-    global active
+    global active, prev_input, prev_input_pos
+    prev_input = weechat.buffer_get_string(buffer, "input")
+    prev_input_pos = weechat.buffer_get_integer(buffer, "input_pos")
+    weechat.buffer_set(buffer, "input", "")
+
     active = True
     set_localvars("")
     weechat.bar_item_update(SCRIPT_BAR_ITEM)
@@ -84,7 +90,7 @@ def command_cb(data, buffer, args):
 
 def command_run_input_cb(data, buffer, command):
     global active, buflist_buffers, buflist_selection
-    input = weechat.buffer_get_string(buffer, 'input')
+    input = weechat.buffer_get_string(buffer, "input")
 
     if active:
         if command == "/input return":
@@ -94,6 +100,9 @@ def command_run_input_cb(data, buffer, command):
             buflist_buffers = None
             buflist_selection = None
             weechat.bar_item_update(SCRIPT_BAR_ITEM)
+
+            weechat.buffer_set(buffer, "input", prev_input)
+            weechat.buffer_set(buffer, "input_pos", str(prev_input_pos))
             weechat.bar_item_update("input_text")
 
             jump_buffer_full_name = weechat.buffer_get_string(jump_buffer, "full_name")
@@ -128,8 +137,8 @@ def command_run_input_cb(data, buffer, command):
 
 def bar_item_cb(data, item, window, buffer, extra_info):
     if active:
-        input = weechat.buffer_get_string(buffer, 'input')
-        input_pos = weechat.buffer_get_integer(buffer, 'input_pos')
+        input = weechat.buffer_get_string(buffer, "input")
+        input_pos = weechat.buffer_get_integer(buffer, "input_pos")
 
         input_with_cursor = input[:input_pos] + "\x19b#" + input[input_pos:]
 
